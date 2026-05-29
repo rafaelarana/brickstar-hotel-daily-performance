@@ -79,6 +79,49 @@ print(f"hotels: {spark.table('hotels').count()} rows")
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC ## destinations_geo (reference table for map visualisations)
+# MAGIC
+# MAGIC Latitude / longitude + ISO codes per destination so the dashboard can
+# MAGIC drive a symbol-map widget over the portfolio.
+
+# COMMAND ----------
+
+geo_rows = [
+    # (destination,        country_iso2, country_iso3, country_name,        lat,       lon)
+    ("Mallorca",           "ES", "ESP", "Spain",                39.6953,    3.0176),
+    ("Ibiza",              "ES", "ESP", "Spain",                38.9067,    1.4206),
+    ("Tenerife",           "ES", "ESP", "Spain",                28.2916,  -16.6291),
+    ("Lanzarote",          "ES", "ESP", "Spain",                29.0469,  -13.5899),
+    ("Fuerteventura",      "ES", "ESP", "Spain",                28.3587,  -14.0535),
+    ("Barcelona",          "ES", "ESP", "Spain",                41.3851,    2.1734),
+    ("Cancun",             "MX", "MEX", "Mexico",               21.1619,  -86.8515),
+    ("Riviera Maya",       "MX", "MEX", "Mexico",               20.5083,  -87.0964),
+    ("Punta Cana",         "DO", "DOM", "Dominican Republic",   18.5601,  -68.3725),
+    ("Montego Bay",        "JM", "JAM", "Jamaica",              18.4762,  -77.8939),
+    ("Salvador",           "BR", "BRA", "Brazil",              -12.9714,  -38.5014),
+    ("Cabo Verde",         "CV", "CPV", "Cabo Verde",           16.5388,  -23.0418),
+    ("Algarve",            "PT", "PRT", "Portugal",             37.0179,   -7.9304),
+    ("Crete",              "GR", "GRC", "Greece",               35.2401,   24.8093),
+    ("Hammamet",           "TN", "TUN", "Tunisia",              36.4015,   10.6168),
+]
+
+geo_df = spark.createDataFrame(
+    geo_rows,
+    schema="destination string, country_iso2 string, country_iso3 string, country_name string, lat double, lon double",
+)
+
+(geo_df
+    .write.format("delta")
+    .mode("overwrite")
+    .option("overwriteSchema", "true")
+    .saveAsTable("destinations_geo"))
+
+display(spark.table("destinations_geo"))
+print(f"destinations_geo: {spark.table('destinations_geo').count()} rows")
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC ## reservations (mock SQL Server table · ~60 days history)
 
 # COMMAND ----------

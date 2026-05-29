@@ -7,6 +7,11 @@ workspace. Both data sources are mocked so the project deploys without any
 external dependency; swapping in real sources is a 2-task substitution
 (see [`docs/Architecture.md`](docs/Architecture.md#10--from-sample-to-production--migration-checklist)).
 
+![Dashboard · Overview](assets/dashboard-overview.png)
+
+The dashboard is multi-tab — see screenshots of [Segments](assets/dashboard-segments.png)
+and [Operations & Quality](assets/dashboard-operations.png) further below.
+
 ## The use case it solves
 
 A daily portfolio-performance board for a hotel chain — the kind of dashboard
@@ -66,7 +71,7 @@ Gold consume the same table names.
 | `brickstar_medallion` | Lakeflow SDP serverless pipeline | Auto Loader → Bronze → Silver (DQ expectations) → Gold |
 | `gold_hotel_daily_kpis` | Materialized view | RevPAR · ADR · occupancy · NPS · GOP proxy |
 | `metric_view_hotel_kpis` | UC Metric View | YAML semantic layer over Gold |
-| `[dev] Brickstar Hotel KPIs` | Lakeview dashboard | Brickstar-styled · cosmos/turquoise/sage/amber roles |
+| `[dev] Brickstar Hotel KPIs` | Lakeview dashboard | 4 tabs · Overview · Geo Map · Segments · Operations & Quality · Brickstar-styled |
 | Genie Space `Brickstar Hotel Performance` | Post-deploy | NL → SQL on Gold + Metric View · Brickstar code-skill in the description |
 
 Detailed design: **[`docs/Architecture.md`](docs/Architecture.md)**
@@ -290,6 +295,29 @@ brickstar_validation/
 | `Invalid serialized_space: Unknown field 'general_instructions'` when creating the Genie Space | Genie API accepts a minimal config schema only | Already fixed — script puts the Brickstar instructions in the `description` kwarg, not in `serialized_space` |
 | Dashboard widgets show "table not found" | Dashboard queries had a hardcoded schema prefix | Already fixed — queries use unqualified names + `dataset_schema: ${resources.schemas.brickstar.name}` |
 | Job task fails with `bundle is not defined` | A `$` in code/YAML inside a JS template-literal (e.g. dashboard JSON) was eaten as an interpolation | Escape with `\$` in any literal `${...}` you want preserved |
+| **Geo · Map** tab shows "Visualization has no fields selected" | `symbol-map` / `choropleth-map` widget specs in Lakeview JSON v3 are in flux — the JSON ships the dataset + widget skeleton but the encoding must be re-bound in the dashboard editor (Edit → field bindings) | WIP — open the dashboard in edit mode and re-bind `latitude`, `longitude`, `size`, `color` on the symbol-map; or `region`, `color` on the choropleth-map |
+
+## Dashboard tabs
+
+The dashboard has 4 tabs. The `Geo · Map` widgets are work-in-progress (see
+gotchas table above); the other three are fully rendered:
+
+### Overview
+![Overview tab](assets/dashboard-overview.png)
+6 KPI counters (Revenue · Occupancy · RevPAR · ADR · NPS · GOP) + revenue trend +
+occupancy area + RevPAR-vs-ADR combo + top-15 hotels bar + segment table.
+
+### Segments
+![Segments tab](assets/dashboard-segments.png)
+Donut chart of revenue share by market segment · stacked RevPAR/ADR bar ·
+ADR-vs-Occupancy scatter (bubble size = revenue, color = segment) · daily
+RevPAR trend per segment.
+
+### Operations & Quality
+![Operations & Quality tab](assets/dashboard-operations.png)
+Total cancellations + portfolio NPS · Cancelations-vs-Reservations daily trend ·
+NPS-per-hotel ascending bar (colored by segment) · at-risk hotels table
+(NPS<55 or occupancy<50%).
 
 ## License
 
