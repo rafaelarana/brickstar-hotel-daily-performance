@@ -1,0 +1,8 @@
+resources:
+  volumes:
+    raw_http:
+      catalog_name: ${var.catalog}
+      schema_name: ${var.schema}
+      name: ${var.volume_name}
+      volume_type: MANAGED
+      comment: "Raw JSON payloads from the mock HTTP fan-out (per hotel × per day)"

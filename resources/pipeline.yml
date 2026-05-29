@@ -1,0 +1,27 @@
+resources:
+  pipelines:
+    brickstar_medallion:
+      name: "[${bundle.target}] brickstar_medallion"
+      catalog: ${var.catalog}
+      schema: ${resources.schemas.brickstar.name}
+
+      libraries:
+        - glob:
+            include: ../src/pipelines/transformations/**
+
+      root_path: ../src/pipelines
+
+      serverless: true
+      continuous: false
+      development: true
+      photon: true
+      channel: CURRENT
+
+      configuration:
+        source_catalog: ${var.catalog}
+        source_schema:  ${resources.schemas.brickstar.name}
+        volume_name:    ${var.volume_name}
+
+      permissions:
+        - level: CAN_VIEW
+          group_name: users

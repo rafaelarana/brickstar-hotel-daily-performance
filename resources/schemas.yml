@@ -1,0 +1,6 @@
+resources:
+  schemas:
+    brickstar:
+      catalog_name: ${var.catalog}
+      name: ${var.schema}
+      comment: "Brickstar validation PoC · mock sources + medallion (bronze_/silver_/gold_) + control + raw_http volume"

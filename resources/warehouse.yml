@@ -1,0 +1,22 @@
+resources:
+  sql_warehouses:
+    brickstar_wh:
+      name: "[${bundle.target}] Brickstar Serverless Warehouse"
+      cluster_size: Medium
+      warehouse_type: PRO          # PRO is required for serverless
+      enable_serverless_compute: true
+      enable_photon: true
+      auto_stop_mins: 10
+      min_num_clusters: 1
+      max_num_clusters: 3
+      channel:
+        name: CHANNEL_NAME_CURRENT
+      tags:
+        custom_tags:
+          - key: project
+            value: brickstar-validation
+          - key: cost_center
+            value: brickstar-sample
+      permissions:
+        - level: CAN_USE
+          group_name: users

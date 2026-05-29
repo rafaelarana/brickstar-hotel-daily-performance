@@ -1,0 +1,3 @@
+# Local Python deps for running the post-deploy scripts.
+# The Databricks workspace ships pyspark/dlt/dbutils — those do NOT go here.
+databricks-sdk>=0.50.0

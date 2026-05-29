@@ -1,0 +1,49 @@
+resources:
+  jobs:
+    brickstar_validation_pipeline:
+      name: "[${bundle.target}] brickstar_validation_pipeline"
+      description: "Seed mock sources → HTTP fan-out → SDP medallion → Metric View"
+
+      tasks:
+        - task_key: seed_mock_sources
+          notebook_task:
+            notebook_path: ../src/notebooks/00_seed_mock_sources.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_bronze: ${resources.schemas.brickstar.name}
+              num_hotels: ${var.num_hotels}
+              history_days: ${var.history_days}
+
+        - task_key: mock_http_fanout
+          depends_on:
+            - task_key: seed_mock_sources
+          notebook_task:
+            notebook_path: ../src/notebooks/01_mock_http_fanout.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_bronze: ${resources.schemas.brickstar.name}
+              volume_name: ${var.volume_name}
+              history_days: ${var.history_days}
+
+        - task_key: run_medallion_pipeline
+          depends_on:
+            - task_key: mock_http_fanout
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.brickstar_medallion.id}
+            full_refresh: true
+
+        - task_key: create_metric_view
+          depends_on:
+            - task_key: run_medallion_pipeline
+          notebook_task:
+            notebook_path: ../src/notebooks/02_create_metric_view.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${resources.schemas.brickstar.name}
+
+      queue:
+        enabled: true
+
+      permissions:
+        - level: CAN_MANAGE_RUN
+          group_name: users

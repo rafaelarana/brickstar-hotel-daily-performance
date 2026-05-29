@@ -1,0 +1,32 @@
+bundle:
+  name: brickstar-validation
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: "Unity Catalog catalog (existing)"
+    default: "classic_stable_89j9qf"
+  schema:
+    description: "Schema where mock sources + medallion tables live"
+    default: "brickstar_validation"
+  volume_name:
+    description: "UC volume for RAW landing"
+    default: "raw_http"
+  # The bundle provisions a Serverless PRO Medium warehouse via
+  # resources/warehouse.yml. Dashboard and Genie consume it via
+  # ${resources.sql_warehouses.brickstar.id}; no warehouse_id variable needed.
+  num_hotels:
+    description: "Hotels to simulate"
+    default: "30"
+  history_days:
+    description: "Days of history to seed"
+    default: "60"
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      profile: brickstar

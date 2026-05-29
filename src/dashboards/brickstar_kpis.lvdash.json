@@ -1,0 +1,282 @@
+{
+  "_comment": "Brickstar PoC dashboard styled with the Brickstar dashboard style (see ~/.claude/skills/brickstar-dashboard-style).",
+  "datasets": [
+    {
+      "name": "ds_portfolio_kpis",
+      "displayName": "Portfolio KPIs (Metric View)",
+      "queryLines": [
+        "SELECT\n",
+        "  MEASURE(total_revenue_eur)        AS total_revenue,\n",
+        "  MEASURE(portfolio_occupancy_pct)  AS occupancy_pct,\n",
+        "  MEASURE(portfolio_revpar_eur)     AS revpar,\n",
+        "  MEASURE(avg_adr_eur)              AS adr,\n",
+        "  MEASURE(avg_nps_score)            AS nps\n",
+        "FROM metric_view_hotel_kpis"
+      ]
+    },
+    {
+      "name": "ds_daily_trend",
+      "displayName": "Daily revenue & occupancy trend",
+      "queryLines": [
+        "SELECT\n",
+        "  metric_date,\n",
+        "  MEASURE(total_revenue_eur)        AS total_revenue,\n",
+        "  MEASURE(portfolio_occupancy_pct)  AS occupancy_pct,\n",
+        "  MEASURE(portfolio_revpar_eur)     AS revpar\n",
+        "FROM metric_view_hotel_kpis\n",
+        "GROUP BY metric_date\n",
+        "ORDER BY metric_date"
+      ]
+    },
+    {
+      "name": "ds_top_hotels",
+      "displayName": "Top hotels by RevPAR",
+      "queryLines": [
+        "SELECT\n",
+        "  hotel_name,\n",
+        "  destination,\n",
+        "  market_segment,\n",
+        "  MEASURE(portfolio_revpar_eur) AS revpar,\n",
+        "  MEASURE(avg_occupancy_pct)    AS occupancy_pct,\n",
+        "  MEASURE(total_revenue_eur)    AS total_revenue\n",
+        "FROM metric_view_hotel_kpis\n",
+        "GROUP BY hotel_name, destination, market_segment\n",
+        "ORDER BY revpar DESC\n",
+        "LIMIT 15"
+      ]
+    },
+    {
+      "name": "ds_by_market",
+      "displayName": "Performance by market segment",
+      "queryLines": [
+        "SELECT\n",
+        "  market_segment,\n",
+        "  MEASURE(portfolio_revpar_eur)    AS revpar,\n",
+        "  MEASURE(portfolio_occupancy_pct) AS occupancy_pct,\n",
+        "  MEASURE(avg_adr_eur)             AS adr,\n",
+        "  MEASURE(total_revenue_eur)       AS revenue\n",
+        "FROM metric_view_hotel_kpis\n",
+        "GROUP BY market_segment\n",
+        "ORDER BY revpar DESC"
+      ]
+    },
+    {
+      "name": "ds_by_destination",
+      "displayName": "Occupancy by destination",
+      "queryLines": [
+        "SELECT\n",
+        "  destination,\n",
+        "  country,\n",
+        "  MEASURE(portfolio_occupancy_pct) AS occupancy_pct,\n",
+        "  MEASURE(total_revenue_eur)       AS revenue\n",
+        "FROM metric_view_hotel_kpis\n",
+        "GROUP BY destination, country\n",
+        "ORDER BY occupancy_pct DESC"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "page_overview",
+      "displayName": "Overview",
+      "layout": [
+        {
+          "widget": {
+            "name": "title_widget",
+            "textbox_spec": "# Portfolio performance today\n\n_Governed KPIs from `metric_view_hotel_kpis` · Daily refresh from the medallion pipeline_"
+          },
+          "position": { "x": 0, "y": 0, "width": 6, "height": 2 }
+        },
+        {
+          "widget": {
+            "name": "kpi_revenue",
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_portfolio_kpis", "fields": [{ "name": "total_revenue", "expression": "`total_revenue`" }], "disaggregated": true } }],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_revenue",
+                  "displayName": "Revenue total",
+                  "format": { "type": "number-currency", "currencyCode": "EUR", "abbreviation": "compact" },
+                  "style": { "color": "#002855" }
+                }
+              },
+              "frame": { "showTitle": true, "title": "REVENUE TOTAL", "showDescription": false }
+            }
+          },
+          "position": { "x": 0, "y": 2, "width": 1, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "kpi_occupancy",
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_portfolio_kpis", "fields": [{ "name": "occupancy_pct", "expression": "`occupancy_pct`" }], "disaggregated": true } }],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "occupancy_pct",
+                  "displayName": "Ocupación",
+                  "format": { "type": "number-plain", "decimalPlaces": { "type": "exact", "places": 1 } },
+                  "style": { "color": "#3AA597" }
+                }
+              },
+              "frame": { "showTitle": true, "title": "OCUPACIÓN (%)", "showDescription": false }
+            }
+          },
+          "position": { "x": 1, "y": 2, "width": 1, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "kpi_revpar",
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_portfolio_kpis", "fields": [{ "name": "revpar", "expression": "`revpar`" }], "disaggregated": true } }],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "revpar",
+                  "displayName": "RevPAR",
+                  "format": { "type": "number-currency", "currencyCode": "EUR" },
+                  "style": { "color": "#3AA597" }
+                }
+              },
+              "frame": { "showTitle": true, "title": "REVPAR (€)", "showDescription": false }
+            }
+          },
+          "position": { "x": 2, "y": 2, "width": 1, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "kpi_adr",
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_portfolio_kpis", "fields": [{ "name": "adr", "expression": "`adr`" }], "disaggregated": true } }],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "adr",
+                  "displayName": "ADR",
+                  "format": { "type": "number-currency", "currencyCode": "EUR" },
+                  "style": { "color": "#A6C26E" }
+                }
+              },
+              "frame": { "showTitle": true, "title": "ADR MEDIO", "showDescription": false }
+            }
+          },
+          "position": { "x": 3, "y": 2, "width": 1, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "kpi_nps",
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_portfolio_kpis", "fields": [{ "name": "nps", "expression": "`nps`" }], "disaggregated": true } }],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "nps",
+                  "displayName": "NPS",
+                  "format": { "type": "number-plain", "decimalPlaces": { "type": "exact", "places": 1 } },
+                  "style": { "color": "#FFD54F" }
+                }
+              },
+              "frame": { "showTitle": true, "title": "NPS MEDIO", "showDescription": false }
+            }
+          },
+          "position": { "x": 4, "y": 2, "width": 1, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "trend_revenue",
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_daily_trend", "fields": [{ "name": "metric_date", "expression": "`metric_date`" }, { "name": "total_revenue", "expression": "`total_revenue`" }], "disaggregated": false } }],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": { "fieldName": "metric_date", "scale": { "type": "temporal" }, "displayName": "Fecha", "axis": { "title": "" } },
+                "y": { "fieldName": "total_revenue", "scale": { "type": "quantitative" }, "displayName": "Revenue (€)", "axis": { "title": "", "format": { "type": "number-currency", "currencyCode": "EUR", "abbreviation": "compact" } } },
+                "color": { "fieldName": "_total_revenue", "scale": { "type": "categorical", "mappings": [{ "value": "total_revenue", "color": "#3AA597" }] }, "legend": { "hide": true } }
+              },
+              "frame": { "showTitle": true, "title": "Revenue diario", "showDescription": false }
+            }
+          },
+          "position": { "x": 0, "y": 5, "width": 3, "height": 4 }
+        },
+        {
+          "widget": {
+            "name": "trend_occupancy",
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_daily_trend", "fields": [{ "name": "metric_date", "expression": "`metric_date`" }, { "name": "occupancy_pct", "expression": "`occupancy_pct`" }], "disaggregated": false } }],
+            "spec": {
+              "version": 3,
+              "widgetType": "area",
+              "encodings": {
+                "x": { "fieldName": "metric_date", "scale": { "type": "temporal" }, "displayName": "Fecha", "axis": { "title": "" } },
+                "y": { "fieldName": "occupancy_pct", "scale": { "type": "quantitative" }, "displayName": "Ocupación (%)", "axis": { "title": "" } },
+                "color": { "fieldName": "_occupancy_pct", "scale": { "type": "categorical", "mappings": [{ "value": "occupancy_pct", "color": "#A6C26E" }] }, "legend": { "hide": true } }
+              },
+              "frame": { "showTitle": true, "title": "Ocupación diaria del portfolio", "showDescription": false }
+            }
+          },
+          "position": { "x": 3, "y": 5, "width": 3, "height": 4 }
+        },
+        {
+          "widget": {
+            "name": "top_hotels",
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_top_hotels", "fields": [{ "name": "hotel_name", "expression": "`hotel_name`" }, { "name": "revpar", "expression": "`revpar`" }], "disaggregated": false } }],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": { "fieldName": "revpar", "scale": { "type": "quantitative" }, "displayName": "RevPAR (€)", "axis": { "format": { "type": "number-currency", "currencyCode": "EUR" } } },
+                "y": { "fieldName": "hotel_name", "scale": { "type": "categorical", "sort": { "by": "x-reversed" } }, "displayName": "Hotel" },
+                "color": { "fieldName": "_revpar", "scale": { "type": "categorical", "mappings": [{ "value": "revpar", "color": "#002855" }] }, "legend": { "hide": true } }
+              },
+              "frame": { "showTitle": true, "title": "Top 15 hoteles por RevPAR", "showDescription": false }
+            }
+          },
+          "position": { "x": 0, "y": 9, "width": 3, "height": 5 }
+        },
+        {
+          "widget": {
+            "name": "by_market",
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_by_market", "fields": [{ "name": "market_segment", "expression": "`market_segment`" }, { "name": "revpar", "expression": "`revpar`" }, { "name": "occupancy_pct", "expression": "`occupancy_pct`" }, { "name": "adr", "expression": "`adr`" }, { "name": "revenue", "expression": "`revenue`" }], "disaggregated": false } }],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  { "fieldName": "market_segment", "displayName": "Segmento", "type": "string" },
+                  { "fieldName": "revpar",         "displayName": "RevPAR (€)",     "type": "float", "format": { "type": "number-currency", "currencyCode": "EUR" } },
+                  { "fieldName": "occupancy_pct",  "displayName": "Ocupación (%)",  "type": "float", "format": { "type": "number-plain", "decimalPlaces": { "type": "exact", "places": 1 } } },
+                  { "fieldName": "adr",            "displayName": "ADR (€)",        "type": "float", "format": { "type": "number-currency", "currencyCode": "EUR" } },
+                  { "fieldName": "revenue",        "displayName": "Revenue (€)",    "type": "float", "format": { "type": "number-currency", "currencyCode": "EUR", "abbreviation": "compact" } }
+                ]
+              },
+              "frame": { "showTitle": true, "title": "Performance por segmento de mercado", "showDescription": false }
+            }
+          },
+          "position": { "x": 3, "y": 9, "width": 3, "height": 5 }
+        },
+        {
+          "widget": {
+            "name": "by_destination",
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_by_destination", "fields": [{ "name": "destination", "expression": "`destination`" }, { "name": "occupancy_pct", "expression": "`occupancy_pct`" }], "disaggregated": false } }],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": { "fieldName": "destination", "scale": { "type": "categorical" }, "displayName": "Destino" },
+                "y": { "fieldName": "occupancy_pct", "scale": { "type": "quantitative" }, "displayName": "Ocupación (%)" },
+                "color": { "fieldName": "_occupancy_pct", "scale": { "type": "categorical", "mappings": [{ "value": "occupancy_pct", "color": "#EE8E00" }] }, "legend": { "hide": true } }
+              },
+              "frame": { "showTitle": true, "title": "Ocupación por destino", "showDescription": false }
+            }
+          },
+          "position": { "x": 0, "y": 14, "width": 6, "height": 4 }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+# Brickstar hotel daily KPIs · Unity Catalog Metric View
+# Reference YAML — also used by `02_create_metric_view.py` to materialise the view
+# at deploy time. Native DAB `metric_views` resource is being adopted gradually;
+# until then we deploy via SQL CREATE VIEW ... WITH METRICS LANGUAGE YAML.
+
+version: 0.1
+
+source: classic_stable_89j9qf.brickstar_validation.gold_hotel_daily_kpis
+
+dimensions:
+  - name: metric_date
+    expr: metric_date
+  - name: hotel_id
+    expr: hotel_id
+  - name: hotel_name
+    expr: hotel_name
+  - name: country
+    expr: country
+  - name: destination
+    expr: destination
+  - name: market_segment
+    expr: market_segment
+  - name: stars
+    expr: stars
+
+measures:
+  - name: total_revenue_eur
+    expr: SUM(daily_revenue_eur)
+  - name: avg_revpar_eur
+    expr: AVG(revpar_eur)
+  - name: avg_adr_eur
+    expr: AVG(adr_eur)
+  - name: avg_occupancy_pct
+    expr: AVG(occupancy_pct)
+  - name: total_rooms_occupied
+    expr: SUM(rooms_occupied)
+  - name: total_rooms_available
+    expr: SUM(rooms_total)
+  - name: total_reservations
+    expr: SUM(reservations_count)
+  - name: total_cancellations
+    expr: SUM(cancellations)
+  - name: avg_nps_score
+    expr: AVG(nps_score)
+  - name: total_gop_proxy_eur
+    expr: SUM(gop_proxy_eur)
+  - name: portfolio_occupancy_pct
+    expr: SUM(rooms_occupied) * 100.0 / NULLIF(SUM(rooms_total), 0)
+  - name: portfolio_revpar_eur
+    expr: SUM(daily_revenue_eur) / NULLIF(SUM(rooms_total), 0)

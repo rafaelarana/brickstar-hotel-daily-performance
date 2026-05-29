@@ -1,0 +1,11 @@
+resources:
+  dashboards:
+    brickstar_kpis:
+      display_name: "[${bundle.target}] Brickstar Hotel KPIs"
+      file_path: ../src/dashboards/brickstar_kpis.lvdash.json
+      warehouse_id: ${resources.sql_warehouses.brickstar_wh.id}
+      dataset_catalog: ${var.catalog}
+      dataset_schema: ${resources.schemas.brickstar.name}
+      permissions:
+        - level: CAN_RUN
+          group_name: users

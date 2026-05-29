@@ -1,0 +1,23 @@
+# Databricks Asset Bundles deploy state
+.databricks/
+
+# Python (uv-managed)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.python-version
+.pytest_cache/
+uv.lock
+
+# macOS / IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Local-only overrides
+*.local.yml
+.env
+
+# Generated PNG previews (regenerate via the diagrams skill)
+*.png.bak
